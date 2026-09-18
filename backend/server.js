@@ -25,14 +25,23 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   "https://food-app-vjfl.vercel.app",
-];
+  "https://fooddeliveryappfrontend-r9x9.onrender.com",
+  process.env.FRONTEND_URL,
+].filter(Boolean);
 
-app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-  })
-);
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error(`Origin ${origin} is not allowed by CORS`));
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(cookieParser());
@@ -48,7 +57,7 @@ app.use("/api/cart", cartRouter);
 app.use("/api/address", addressRouter);
 app.use("/api/order", orderRouter);
 
-if (process.env.NODE_ENV !== "production") {
+if (!process.env.VERCEL) {
   app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
   });
