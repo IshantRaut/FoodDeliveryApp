@@ -11,6 +11,11 @@ axios.defaults.baseURL =
 
 export const AppContext = createContext()
 
+// Custom hook
+export const useAppContext = () => {
+    return useContext(AppContext)
+}
+
 export const AppContextProvider = ({ children }) => {
 
     const currency = import.meta.env.VITE_CURRENCY
@@ -30,14 +35,13 @@ export const AppContextProvider = ({ children }) => {
     // =========================
     const fetchUser = async () => {
         try {
+
             const { data } = await axios.get('/api/user/is-auth')
 
             if (data.success && data.user) {
 
                 setuser(data.user)
-
                 setisSeller(data.user.role === 'seller')
-
                 setcartItems(data.user.cartItems || {})
 
             } else {
@@ -62,7 +66,6 @@ export const AppContextProvider = ({ children }) => {
     // Fetch Products
     // =========================
     const fetchProducts = async () => {
-
         try {
 
             const { data } = await axios.get('/api/product/list')
@@ -82,7 +85,6 @@ export const AppContextProvider = ({ children }) => {
             toast.error(error.message)
 
         }
-
     }
 
 
@@ -195,12 +197,10 @@ export const AppContextProvider = ({ children }) => {
     useEffect(() => {
 
         fetchProducts()
-
         fetchUser()
 
-        // IMPORTANT:
-        // fetchSeller() removed from here.
-        // Customer app should not call /api/seller/is-auth.
+        // fetchSeller() intentionally removed.
+        // Customer app does not need to call /api/seller/is-auth.
 
     }, [])
 
@@ -220,29 +220,30 @@ export const AppContextProvider = ({ children }) => {
                 )
 
                 if (!data.success) {
-
                     toast.error(data.message)
-
                 }
 
             } catch (error) {
 
-                // Ignore cart update errors here
+                // Ignore cart update errors
+
             }
 
         }
 
         if (user) {
-
             updateCart()
-
         }
 
     }, [cartItems, user])
 
 
+    // =========================
+    // Context Value
+    // =========================
     const value = {
         setcartItems,
+
         fetchProducts,
 
         axios,
