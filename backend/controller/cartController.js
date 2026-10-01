@@ -1,24 +1,55 @@
+import User from "../models/User.js";
 
-import User from '../models/User.js';
 
-// Controller: persist the current cart items for the logged-in user in the database
+// Save current cart items for logged-in user
 export const updateCart = async (req, res) => {
     try {
-
         const userId = req.userId;
         const { cartItems } = req.body;
 
-        await User.findByIdAndUpdate(userId, {
-            cartItems
-        });
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Not Authorized"
+            });
+        }
 
-        res.json({
+        if (!cartItems) {
+            return res.status(400).json({
+                success: false,
+                message: "Cart items are required"
+            });
+        }
+
+        const user = await User.findByIdAndUpdate(
+            userId,
+            {
+                cartItems
+            },
+            {
+                new: true
+            }
+        );
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        return res.status(200).json({
             success: true,
             message: "Cart updated"
         });
 
     } catch (error) {
-        res.json({
+        console.error(
+            "Update Cart Error:",
+            error
+        );
+
+        return res.status(500).json({
             success: false,
             message: error.message
         });

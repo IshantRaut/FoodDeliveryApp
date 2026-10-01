@@ -1,9 +1,8 @@
-import React from 'react'
-import { useAppContext } from '../../context/AppContext';
-import toast from 'react-hot-toast';
+import React from "react";
+import { useAppContext } from "../../context/AppContext";
+import toast from "react-hot-toast";
 
 const Login = () => {
-
     const {
         setshowUserLogin,
         setuser,
@@ -12,184 +11,223 @@ const Login = () => {
         navigate
     } = useAppContext();
 
-    const [state, setState] = React.useState("login");
-    const [name, setName] = React.useState("");
-    const [email, setEmail] = React.useState("");
-    const [password, setPassword] = React.useState("");
+    const [state, setState] =
+        React.useState("login");
 
-    // NEW
-    const [role, setRole] = React.useState("customer");
+    const [name, setName] =
+        React.useState("");
+
+    const [email, setEmail] =
+        React.useState("");
+
+    const [password, setPassword] =
+        React.useState("");
+
 
     const onSubmitHandler = async (event) => {
+        event.preventDefault();
+
         try {
-            event.preventDefault();
-
-            const { data } = await axios.post(`/api/user/${state}`, {
-                name,
-                email,
-                password,
-
-                // Send role only during registration
-                ...(state === "register" && { role })
-            });
-
-            if (data.success) {
-
-                const nextUser = data.user || null;
-
-                setuser(nextUser);
-                setisSeller(nextUser?.role === "seller");
-                setshowUserLogin(false);
-
-                if (nextUser?.role === "seller") {
-                    setRole("customer");
-                    navigate('/seller');
-                } else {
-                    navigate("/")
+            const { data } = await axios.post(
+                `/api/user/${state}`,
+                {
+                    name,
+                    email,
+                    password
+                },
+                {
+                    withCredentials: true
                 }
+            );
 
-            } else {
+            if (!data.success) {
                 toast.error(data.message);
+                return;
+            }
+
+            const nextUser = data.user || null;
+
+            if (!nextUser) {
+                toast.error(
+                    "User information was not returned"
+                );
+                return;
+            }
+
+            setuser(nextUser);
+
+            setisSeller(
+                nextUser.role === "seller"
+            );
+
+            setshowUserLogin(false);
+
+            toast.success(data.message);
+
+            if (nextUser.role === "seller") {
+                navigate("/seller");
+            } else {
+                navigate("/");
             }
 
         } catch (error) {
+            console.error(
+                "Login Error:",
+                error
+            );
+
             toast.error(
-                error.response?.data?.message || error.message
+                error.response?.data?.message ||
+                error.message
             );
         }
     };
 
+
     return (
-        <div
-            onClick={() => setshowUserLogin(false)}
-            className='fixed top-0 bottom-0 left-0 right-0 z-30 flex items-center text-sm text-gray-600 bg-black/50'
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
 
             <form
                 onSubmit={onSubmitHandler}
-                onClick={(e) => e.stopPropagation()}
-                className="flex flex-col gap-4 m-auto items-start p-8 py-12 w-80 sm:w-[352px] text-gray-500 rounded-lg shadow-xl border border-gray-200 bg-white"
+                className="relative bg-white w-full max-w-md mx-4 p-8 rounded-lg shadow-xl"
             >
 
-                {/* Heading */}
-                <p className="text-2xl font-medium m-auto">
-                    <span className="text-primary">User</span>{" "}
-                    {state === "login" ? "Login" : "Sign Up"}
-                </p>
+                {/* Close */}
 
-                {/* Name */}
-                {state === "register" && (
-                    <div className="w-full">
-                        <p>Name</p>
-
-                        <input
-                            onChange={(e) => setName(e.target.value)}
-                            value={name}
-                            placeholder="Type here"
-                            className="border border-gray-200 rounded w-full p-2 mt-1 outline-primary"
-                            type="text"
-                            required
-                        />
-                    </div>
-                )}
-
-                {/* Email */}
-                <div className="w-full">
-                    <p>Email</p>
-
-                    <input
-                        onChange={(e) => setEmail(e.target.value)}
-                        value={email}
-                        placeholder="Type here"
-                        className="border border-gray-200 rounded w-full p-2 mt-1 outline-primary"
-                        type="email"
-                        required
-                    />
-                </div>
-
-                {/* Password */}
-                <div className="w-full">
-                    <p>Password</p>
-
-                    <input
-                        onChange={(e) => setPassword(e.target.value)}
-                        value={password}
-                        placeholder="Type here"
-                        className="border border-gray-200 rounded w-full p-2 mt-1 outline-primary"
-                        type="password"
-                        required
-                    />
-                </div>
-
-                {/* Account Type */}
-                {state === "register" && (
-                    <div className="w-full">
-
-                        <p className="mb-2">Create account as</p>
-
-                        <div className="flex gap-6">
-
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    value="customer"
-                                    checked={role === "customer"}
-                                    onChange={(e) => setRole(e.target.value)}
-                                />
-                                Customer
-                            </label>
-
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    value="seller"
-                                    checked={role === "seller"}
-                                    onChange={(e) => setRole(e.target.value)}
-                                />
-                                Seller
-                            </label>
-
-                        </div>
-
-                    </div>
-                )}
-
-                {/* Switch Login/Register */}
-                {state === "register" ? (
-                    <p>
-                        Already have account?{" "}
-                        <span
-                            onClick={() => setState("login")}
-                            className="text-primary cursor-pointer"
-                        >
-                            Click here
-                        </span>
-                    </p>
-                ) : (
-                    <p>
-                        Create an account?{" "}
-                        <span
-                            onClick={() => setState("register")}
-                            className="text-primary cursor-pointer"
-                        >
-                            Click here
-                        </span>
-                    </p>
-                )}
-
-                {/* Submit */}
                 <button
-                    type="submit"
-                    className="bg-primary hover:bg-primary-dull transition-all text-white w-full py-2 rounded-md cursor-pointer"
+                    type="button"
+                    onClick={() =>
+                        setshowUserLogin(false)
+                    }
+                    className="absolute right-4 top-4 text-gray-500 hover:text-black text-xl"
                 >
-                    {state === "register"
-                        ? "Create Account"
-                        : "Login"}
+                    ×
                 </button>
 
+
+                {/* Heading */}
+
+                <h2 className="text-2xl font-semibold text-center mb-6">
+                    {state === "login"
+                        ? "Login"
+                        : "Create Account"}
+                </h2>
+
+
+                {/* Name */}
+
+                {state === "register" && (
+                    <div className="mb-4">
+
+                        <label className="block text-sm mb-1">
+                            Name
+                        </label>
+
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(e) =>
+                                setName(e.target.value)
+                            }
+                            placeholder="Enter your name"
+                            className="w-full border border-gray-300 rounded px-3 py-2 outline-none focus:border-primary"
+                            required
+                        />
+
+                    </div>
+                )}
+
+
+                {/* Email */}
+
+                <div className="mb-4">
+
+                    <label className="block text-sm mb-1">
+                        Email
+                    </label>
+
+                    <input
+                        type="email"
+                        value={email}
+                        onChange={(e) =>
+                            setEmail(e.target.value)
+                        }
+                        placeholder="Enter your email"
+                        className="w-full border border-gray-300 rounded px-3 py-2 outline-none focus:border-primary"
+                        required
+                    />
+
+                </div>
+
+
+                {/* Password */}
+
+                <div className="mb-5">
+
+                    <label className="block text-sm mb-1">
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        value={password}
+                        onChange={(e) =>
+                            setPassword(e.target.value)
+                        }
+                        placeholder="Enter your password"
+                        className="w-full border border-gray-300 rounded px-3 py-2 outline-none focus:border-primary"
+                        required
+                    />
+
+                </div>
+
+
+                {/* Submit */}
+
+                <button
+                    type="submit"
+                    className="w-full bg-primary text-white py-2.5 rounded-md hover:bg-primary-dull transition"
+                >
+                    {state === "login"
+                        ? "Login"
+                        : "Create Account"}
+                </button>
+
+
+                {/* Switch */}
+
+                <p className="text-sm text-center mt-5 text-gray-600">
+
+                    {state === "login"
+                        ? "Don't have an account? "
+                        : "Already have an account? "}
+
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setState(
+                                state === "login"
+                                    ? "register"
+                                    : "login"
+                            );
+
+                            setName("");
+                            setEmail("");
+                            setPassword("");
+                        }}
+                        className="text-primary font-medium"
+                    >
+                        {state === "login"
+                            ? "Register"
+                            : "Login"}
+                    </button>
+
+                </p>
+
             </form>
+
         </div>
-    )
-}
+    );
+};
 
 export default Login;

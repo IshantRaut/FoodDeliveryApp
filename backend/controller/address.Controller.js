@@ -1,32 +1,75 @@
 import Address from "../models/Address.js";
 
-// Controller: save a customer delivery address tied to the authenticated user
 export const addAdress = async (req, res) => {
     try {
         const { address } = req.body;
+        const userId = req.userId;
+
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Not Authorized"
+            });
+        }
 
         if (!address) {
-            return res.json({
+            return res.status(400).json({
                 success: false,
                 message: "Address data is missing"
             });
         }
 
-        // Get logged-in user ID from auth middleware
-        const userId = req.userId;
+        const {
+            firstName,
+            lastName,
+            email,
+            street,
+            city,
+            state,
+            zipcode,
+            country,
+            phone
+        } = address;
+
+        if (
+            !firstName ||
+            !lastName ||
+            !email ||
+            !street ||
+            !city ||
+            !state ||
+            !zipcode ||
+            !country ||
+            !phone
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide all address details"
+            });
+        }
 
         await Address.create({
-            ...address,
-            userId
+            userId,
+            firstName,
+            lastName,
+            email,
+            street,
+            city,
+            state,
+            zipcode,
+            country,
+            phone
         });
 
-        res.json({
+        return res.status(201).json({
             success: true,
             message: "Address added successfully"
         });
 
     } catch (error) {
-        res.json({
+        console.error("Add Address Error:", error);
+
+        return res.status(500).json({
             success: false,
             message: error.message
         });
@@ -34,21 +77,32 @@ export const addAdress = async (req, res) => {
 };
 
 
-// Controller: return all saved delivery addresses for the authenticated customer
 export const getAddress = async (req, res) => {
     try {
-        // Get logged-in user ID from auth middleware
         const userId = req.userId;
 
-        const addresses = await Address.find({ userId });
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Not Authorized"
+            });
+        }
 
-        res.json({
+        const addresses = await Address.find({
+            userId
+        }).sort({
+            createdAt: -1
+        });
+
+        return res.status(200).json({
             success: true,
             addresses
         });
 
     } catch (error) {
-        res.json({
+        console.error("Get Address Error:", error);
+
+        return res.status(500).json({
             success: false,
             message: error.message
         });

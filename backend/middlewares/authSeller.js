@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 
 const authSeller = async (req, res, next) => {
     try {
-        const { sellerToken } = req.cookies;
+        const sellerToken = req.cookies?.sellerToken;
 
         if (!sellerToken) {
             return res.status(401).json({
@@ -16,7 +16,7 @@ const authSeller = async (req, res, next) => {
             process.env.JWT_SECRET
         );
 
-        if (decoded.role !== "seller") {
+        if (!decoded?.id || decoded.role !== "seller") {
             return res.status(401).json({
                 success: false,
                 message: "Not Authorized"
@@ -28,9 +28,14 @@ const authSeller = async (req, res, next) => {
         next();
 
     } catch (error) {
+        console.error(
+            "Seller Auth Error:",
+            error.message
+        );
+
         return res.status(401).json({
             success: false,
-            message: "Invalid seller token"
+            message: "Invalid or expired seller token"
         });
     }
 };
