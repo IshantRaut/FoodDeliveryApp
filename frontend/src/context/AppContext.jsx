@@ -15,6 +15,19 @@ axios.defaults.baseURL =
     import.meta.env.VITE_BACKEND_URL ||
     "http://localhost:4000";
 
+axios.interceptors.request.use((config) => {
+    const token =
+        typeof window === "undefined"
+            ? null
+            : window.localStorage.getItem("authToken");
+
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+});
+
 
 export const AppContext = createContext();
 

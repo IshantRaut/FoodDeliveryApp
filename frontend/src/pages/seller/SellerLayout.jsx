@@ -56,6 +56,7 @@ const SellerLayout = () => {
                 );
 
             if (data.success) {
+                window.localStorage.removeItem("authToken");
 
                 setuser(null);
                 setisSeller(false);

@@ -34,6 +34,13 @@ const SellerLogin = () => {
                 return;
             }
 
+            if (!data.token) {
+                toast.error("Authentication token was not returned");
+                return;
+            }
+
+            window.localStorage.setItem("authToken", data.token);
+
             const loggedInUser = data.user;
 
             if (

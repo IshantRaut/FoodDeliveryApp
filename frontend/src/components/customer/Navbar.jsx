@@ -34,6 +34,7 @@ const Navbar = () => {
             );
 
             if (data.success) {
+                window.localStorage.removeItem("authToken");
                 toast.success(data.message);
 
                 setuser(null);

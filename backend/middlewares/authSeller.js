@@ -2,7 +2,9 @@ import jwt from "jsonwebtoken";
 
 const authSeller = async (req, res, next) => {
     try {
-        const sellerToken = req.cookies?.sellerToken;
+        const bearerToken = req.headers.authorization
+            ?.match(/^Bearer\s+(.+)$/i)?.[1];
+        const sellerToken = bearerToken || req.cookies?.sellerToken;
 
         if (!sellerToken) {
             return res.status(401).json({

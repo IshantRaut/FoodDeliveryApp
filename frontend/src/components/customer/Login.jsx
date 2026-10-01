@@ -45,6 +45,13 @@ const Login = () => {
                 return;
             }
 
+            if (!data.token) {
+                toast.error("Authentication token was not returned");
+                return;
+            }
+
+            window.localStorage.setItem("authToken", data.token);
+
             const nextUser = data.user || null;
 
             if (!nextUser) {

@@ -81,6 +81,7 @@ export const sellerLogin = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "Logged in successfully",
+            token,
             user: sanitizeUser(seller)
         });
 
